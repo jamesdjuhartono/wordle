@@ -7,6 +7,7 @@
 		Settings,
 		LetterStates,
 		getWordNumber,
+		ROWS,
 		words,
 		SessionGameState,
 	} from "./utils";
@@ -90,7 +91,6 @@
 						showSessionPlayerSelector = true;
 					} else if (sessionLeaderboard) {
 						currentPlayerEntry = JSON.parse(sessionLeaderboard);
-						window.console.log("Current player entry:", currentPlayerEntry);
 						if (currentPlayerEntry.completedAt != null){
 							showLeaderboard = true;
 						} else{
@@ -130,7 +130,7 @@
 		sessionState = new SessionGameState(sessionId, localStorage.getItem(`session-${sessionId}`));
 		letterStates.set(new LetterStates(sessionState.board));
 
-		//  Create blank leaderboard entry for the current player
+		//  Create blank leaderboard entry for new player
 		if (!currentPlayerEntry){
 			currentPlayerEntry = {
 				playerName: localStorage.getItem("player") || "",
@@ -152,8 +152,8 @@
 			
 			// Reset board for the new word length
 			sessionState.board = {
-				words: Array(6).fill(""),
-				state: Array.from({ length: 6 }, () => (Array(firstWord.length).fill("🔳"))),
+				words: Array(ROWS).fill(""),
+				state: Array.from({ length: ROWS }, () => (Array(firstWord.length).fill("🔳"))),
 			};
 		}
 
@@ -173,10 +173,7 @@
 	}
 
 	async function handleSessionComplete(completedEntry: LeaderboardEntry) {
-		localStorage.setItem(`session-${completedEntry.sessionId}-leaderboard`, JSON.stringify(completedEntry));
-		currentPlayerEntry = completedEntry;
 		showLeaderboard = true;
-		// sessionState = null;
 	}
 
 	$: if (state) saveState(state);

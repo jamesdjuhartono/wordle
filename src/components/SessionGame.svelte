@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { createEventDispatcher } from "svelte";
-	import { fade } from "svelte/transition";
-	import Header from "./Header.svelte";
+	import { createEventDispatcher, onDestroy } from "svelte";
 	import { Board } from "./board";
 	import Keyboard from "./keyboard";
-	import Modal from "./Modal.svelte";
-	import { getContext, onMount, setContext } from "svelte";
+	import { onMount, setContext } from "svelte";
 	import {
 		DELAY_INCREMENT,
 		PRAISE,
@@ -14,7 +11,7 @@
 		isValidWord,
 		LetterStates,
 	} from "../utils";
-	import { letterStates, settings } from "../stores";
+	import { letterStates } from "../stores";
 	import { getSessionById } from "../session_words";
 	import type { SessionData, SessionWord } from "../session_words";
 	import { Toaster } from "./widgets";
@@ -32,6 +29,11 @@
 	let board: Board;
 	let wordStartTime = Date.now();
 
+	let now = Date.now();
+	const interval = setInterval(() => {
+		now = Date.now();
+	}, 1000);
+
 	$: {
 		sessionData = getSessionById(sessionState.sessionId);
 		if (sessionData && sessionState.currentWordIndex < sessionData.words.length) {
@@ -39,14 +41,13 @@
 		}
 	}
 
-	// implement transition delay on keys
-	const delay = DELAY_INCREMENT * ROWS + 800;
-
 	function submitWord() {
 		if (!currentSessionWord || !sessionData) return;
 
 		const currentGuess = sessionState.latestWord;
 		const targetWord = sessionState.currentWord;
+
+		const currentDelay = DELAY_INCREMENT * targetWord.length + 800;
 
 		if (currentGuess.length !== targetWord.length) {
 			toaster.pop(`Word must be ${targetWord.length} letters`);
@@ -64,29 +65,19 @@
 		const result = sessionState.guess(currentGuess, targetWord);
 		sessionState.board.state[sessionState.guesses] = result;
 		sessionState.guesses++;
+		// Update leaderboard entry for live scoreboard
+		currentPlayerEntry.totalGuesses++;
 
 		// Update letter states
 		$letterStates.update(sessionState.lastState, sessionState.lastWord);
 		$letterStates = $letterStates;
-		window.console.log("Current guess result:", sessionState);
 		// Check if word is completed
 		const isCorrect = result.every(state => state === "🟩");
 
-		// Update leaderboard entry for live scoreboard
-		currentPlayerEntry = {
-			playerName: localStorage.getItem("player") || "",
-			playerUid: localStorage.getItem('playerUid'),
-			sessionId: sessionState.sessionId,
-			totalGuesses: sessionState.wordResults.reduce((sum, result) => sum + result.guesses, 0) + sessionState.guesses,
-			totalTime: Date.now() - sessionState.startTime,
-			completedAt: null,
-			wordsCompleted: sessionState.wordResults.filter(r => r.completed).length + (isCorrect ? 1 : 0),
-		};
-		
 		if (isCorrect) {
 			// Word completed successfully
 			board.bounce(sessionState.guesses - 1);
-			setTimeout(() => toaster.pop(PRAISE[Math.min(sessionState.guesses - 1, PRAISE.length - 1)]), DELAY_INCREMENT * targetWord.length + DELAY_INCREMENT);
+			setTimeout(() => toaster.pop(PRAISE[Math.min(sessionState.guesses - 1, PRAISE.length - 1)]), currentDelay);
 			
 			// Record word result
 			const wordResult: SessionWordResult = {
@@ -96,6 +87,8 @@
 				completed: true
 			};
 			sessionState.wordResults.push(wordResult);
+			currentPlayerEntry.wordsCompleted++;
+			currentPlayerEntry.totalTime = Date.now() - sessionState.startTime;
 			
 			// Move to next word or complete session
 			setTimeout(() => {
@@ -104,7 +97,7 @@
 				} else {
 					completeSession();
 				}
-			}, delay * 1.4);
+			}, currentDelay * 1.4);
 		} else if (sessionState.guesses >= ROWS) {
 			// Failed this word
 			const wordResult: SessionWordResult = {
@@ -124,7 +117,7 @@
 						completeSession();
 					}
 				}, 2000);
-			}, delay);
+			}, currentDelay);
 		}
 	}
 
@@ -159,22 +152,8 @@
 		sessionState.endTime = Date.now();
 		sessionState.active = false;
 
-		// Calculate totals
-		const totalGuesses = sessionState.wordResults.reduce((sum, result) => sum + result.guesses, 0);
-		const totalTime = sessionState.endTime - sessionState.startTime;
-		const wordsCompleted = sessionState.wordResults.filter(result => result.completed).length;
-
-		const leaderboardEntry: LeaderboardEntry = {
-			playerName: localStorage.getItem("player") || "",
-			playerUid: localStorage.getItem('playerUid'),
-			sessionId: sessionState.sessionId,
-			totalGuesses,
-			totalTime,
-			completedAt: sessionState.endTime,
-			wordsCompleted
-		};
-
-		dispatch("complete", leaderboardEntry);
+		currentPlayerEntry.completedAt = sessionState.endTime;
+		dispatch("complete", currentPlayerEntry);
 	}
 
 	function formatTime(ms: number): string {
@@ -191,6 +170,7 @@
 	onMount(() => {
 		wordStartTime = Date.now();
 	});
+	onDestroy(() => clearInterval(interval));
 </script>
 
 <main class="session-game" style="--rows: {ROWS}; --cols: {sessionState.currentWordLength}">
@@ -204,7 +184,7 @@
 		<div class="session-stats">
 			<div class="stat">
 				<span class="stat-label">Time</span>
-				<span class="stat-value">{formatTime(Date.now() - sessionState.startTime)}</span>
+				<span class="stat-value">{formatTime(now - sessionState.startTime)}</span>
 			</div>
 			<div class="stat">
 				<span class="stat-label">Words</span>

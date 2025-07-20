@@ -80,7 +80,6 @@
 			bind:this={rows[i]}
 			bind:value={value[i]}
 			state={board.state[i]}
-			on:ctx={(e) => context(e.detail.x, e.detail.y, i, value[i])}
 		/>
 	{/each}
 	{#if icon}

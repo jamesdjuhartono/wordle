@@ -14,7 +14,11 @@
 		animation = "shake";
 	}
 	export function bounce() {
-		tiles.forEach((e) => e.bounce());
+		tiles.forEach((e) => {
+			if (e && typeof e.bounce === 'function') {
+				e.bounce();
+			}
+		});
 	}
 	const dispatch = createEventDispatcher();
 	let animation = "";

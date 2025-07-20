@@ -88,15 +88,6 @@ type Direction = "top" | "right" | "bottom" | "left";
 
 type Swipe = CustomEvent<{ direction: Direction; }>;
 
-type SessionProgress = {
-	sessionId: string;
-	currentWordIndex: number;
-	completed: boolean;
-	startTime: number;
-	endTime?: number;
-	wordResults: SessionWordResult[];
-};
-
 type SessionWordResult = {
 	word: string;
 	guesses: number;
