@@ -106,6 +106,7 @@ type SessionWordResult = {
 
 type LeaderboardEntry = {
 	playerName: string;
+	playerUid: string;
 	sessionId: string;
 	totalGuesses: number;
 	totalTime: number;

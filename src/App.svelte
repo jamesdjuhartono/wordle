@@ -11,9 +11,7 @@
 		SessionGameState,
 	} from "./utils";
 	import Game from "./components/Game.svelte";
-	//import SessionSelector from "./components/SessionSelector.svelte";
 	import SessionPlayerSelector from "./components/SessionPlayerSelector.svelte";
-	import Leaderboard from "./components/Leaderboard.svelte";
 	import SessionGame from "./components/SessionGame.svelte";
 	import { letterStates, settings, mode } from "./stores";
 	import { GameMode } from "./enums";
@@ -27,6 +25,8 @@
 </script>
 
 <script lang="ts">
+    import Leaderboard from "./components/Leaderboard.svelte";
+
 	export let version: string;
 	setContext("version", version);
 	localStorage.setItem("version", version);
@@ -38,7 +38,6 @@
 	
 	// Session mode variables
 	let sessionState: SessionGameState | null = null;
-	let showSessionSelector = false;
 	let showSessionPlayerSelector = false;
 	let showLeaderboard = false;
 	let currentPlayerEntry: LeaderboardEntry | null = null;
@@ -61,6 +60,7 @@
 	// Check URL for session parameters
 	const urlParams = new URLSearchParams(window.location.search);
 	const sessionIdFromUrl = urlParams.get("session");
+	const leaderboardFromUrl = urlParams.get("leaderboard") === "true";
 
 	const hash = window.location.hash.slice(1).split("/");
 	const modeVal: GameMode = !isNaN(GameMode[hash[0]])
@@ -81,12 +81,16 @@
 				const sessionLeaderboard = localStorage.getItem(`session-${sessionData.id}-leaderboard`);
 				if (!sessionData) {
 					showSessionPlayerSelector = true;
+				} else if (leaderboardFromUrl){
+					currentPlayerEntry = null;
+					showLeaderboard = true;
 				} else {
 					let playerName = localStorage.getItem('player');
 					if (!playerName) {
 						showSessionPlayerSelector = true;
 					} else if (sessionLeaderboard) {
 						currentPlayerEntry = JSON.parse(sessionLeaderboard);
+						window.console.log("Current player entry:", currentPlayerEntry);
 						if (currentPlayerEntry.completedAt != null){
 							showLeaderboard = true;
 						} else{
@@ -127,16 +131,18 @@
 		letterStates.set(new LetterStates(sessionState.board));
 
 		//  Create blank leaderboard entry for the current player
-		currentPlayerEntry = {
-			playerName: localStorage.getItem("player") || "",
-			sessionId: sessionState.sessionId,
-			totalGuesses: 0,
-			totalTime: Date.now() - sessionState.startTime,
-			completedAt: null,
-			wordsCompleted: 0,
-		};
+		if (!currentPlayerEntry){
+			currentPlayerEntry = {
+				playerName: localStorage.getItem("player") || "",
+				playerUid: localStorage.getItem('playerUid'),
+				sessionId: sessionState.sessionId,
+				totalGuesses: 0,
+				totalTime: Date.now() - sessionState.startTime,
+				completedAt: null,
+				wordsCompleted: 0,
+			};
+		}
 		
-		window.console.log("Starting session", sessionData, sessionState);
 		// Initialize first word if starting fresh
 		if (sessionState.currentWordIndex === 0 && !sessionState.currentWord) {
 			const firstWord = sessionData.words[0];
@@ -175,6 +181,7 @@
 
 	$: if (state) saveState(state);
 	$: if (sessionState) saveSessionState(sessionState);
+	$: if (currentPlayerEntry) savePlayerEntry(currentPlayerEntry);
 
 	function saveState(state: GameState) {
 		if (modeData.modes[$mode].historical) {
@@ -184,9 +191,21 @@
 		}
 	}
 
+	async function sendPlayerUpdate(update: LeaderboardEntry) {
+		// Use playerID as the document ID (change as appropriate)
+		const playerRef = doc(db, update.sessionId, localStorage.getItem('playerUid'));
+		await setDoc(playerRef, update, { merge: true }); // merge:true will update or create
+	}
+
 	function saveSessionState(sessionState: SessionGameState) {
 		localStorage.setItem(`session-${sessionState.sessionId}`, sessionState.toString());
-		localStorage.setItem(`session-${sessionState.sessionId}-leaderboard`, JSON.stringify(currentPlayerEntry));
+	}
+
+	function savePlayerEntry(currentPlayerEntry: LeaderboardEntry) {
+		localStorage.setItem(`session-${currentPlayerEntry.sessionId}-leaderboard`, JSON.stringify(currentPlayerEntry));
+		sendPlayerUpdate(currentPlayerEntry).catch(err => {
+			console.error("Failed to update player data in Firestore:", err);
+		});
 	}
 	
 </script>

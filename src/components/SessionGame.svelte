@@ -75,6 +75,7 @@
 		// Update leaderboard entry for live scoreboard
 		currentPlayerEntry = {
 			playerName: localStorage.getItem("player") || "",
+			playerUid: localStorage.getItem('playerUid'),
 			sessionId: sessionState.sessionId,
 			totalGuesses: sessionState.wordResults.reduce((sum, result) => sum + result.guesses, 0) + sessionState.guesses,
 			totalTime: Date.now() - sessionState.startTime,
@@ -165,6 +166,7 @@
 
 		const leaderboardEntry: LeaderboardEntry = {
 			playerName: localStorage.getItem("player") || "",
+			playerUid: localStorage.getItem('playerUid'),
 			sessionId: sessionState.sessionId,
 			totalGuesses,
 			totalTime,
