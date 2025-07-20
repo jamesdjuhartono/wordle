@@ -55,6 +55,17 @@ export const sessionData: Record<string, SessionData> = {
 			{ word: "archipelago", hint: "A group of islands", length: 11 },
 			{ word: "continent", hint: "One of the seven large landmasses", length: 9 }
 		]
+	},
+	"weddle":{
+		id: "weddle",
+		name: "Weddle Words",
+		words: [
+			{ word: "hinge", hint: "How James and Kim met", length: 5 },
+			{ word: "guzman", hint: "Our favorite fastfood takeout", length: 6 },
+			{ word: "alphafly", hint: "Running shoes model (from Nike) we both have", length: 8 },
+			{ word: "paddlepop", hint: "The name of rainbow bear that James won for Kim", length: 9 },
+			{ word: "brotato", hint: "A game that both James and Kim plays", length: 7 }
+		]
 	}
 };
 
