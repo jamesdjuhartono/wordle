@@ -146,6 +146,10 @@
 		max-width: 800px;
 		margin: 0 auto;
 		padding: 20px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 	}
 
 	.header {
@@ -203,11 +207,14 @@
 	.leaderboard-table {
 		background: var(--bg-secondary);
 		border-radius: 8px;
-		overflow: hidden;
+    overflow-y: auto;
+		border-collapse: separate; 
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
 	.table-header {
+    position: sticky;
+    top: 0;
 		display: grid;
 		grid-template-columns: 80px 1fr 80px 100px 100px;
 		gap: 10px;
