@@ -4,6 +4,7 @@ import wordList from "./words_5";
 
 export const ROWS = 6;
 export const COLS = 5;
+export const MAX_WORD_LENGTH = 15;
 
 export const words = {
 	...wordList,
@@ -181,6 +182,15 @@ export const modeData: ModeData = {
 			seed: newSeed(GameMode.infinite),
 			historical: false,
 			icon: "m7,100c0,-50 68,-50 93,0c25,50 93,50 93,0c0,-50 -68,-50 -93,0c-25,50 -93,50 -93,0z",
+		},
+		{
+			name: "Session",
+			unit: 0,
+			start: 0,
+			seed: 0,
+			historical: false,
+			icon: "m20,20h160v20h-160zm0,40h160v20h-160zm0,40h160v20h-160zm0,40h160v20h-160z",
+			sessionId: "",
 		},
 		// {
 		// 	name: "Minutely",
@@ -460,4 +470,113 @@ export function timeRemaining(m: Mode) {
 
 export function failed(s: GameState) {
 	return !(s.active || (s.guesses > 0 && s.board.state[s.guesses - 1].join("") === "🟩".repeat(COLS)));
+}
+
+// Session-related utility functions and classes
+export class SessionGameState extends Storable {
+	public sessionId: string;
+	public currentWordIndex: number;
+	public completed: boolean;
+	public startTime: number;
+	public endTime?: number;
+	public wordResults: SessionWordResult[];
+	public currentWord: string;
+	public currentHint: string;
+	public currentWordLength: number;
+	public board: GameBoard;
+	public guesses: number;
+	public active: boolean;
+
+	#valid = false;
+
+	constructor(sessionId: string, data?: string) {
+		super();
+		this.sessionId = sessionId;
+		if (data) {
+			this.parse(data);
+		}
+		if (!this.#valid) {
+			this.currentWordIndex = 0;
+			this.completed = false;
+			this.startTime = Date.now();
+			this.wordResults = [];
+			this.currentWord = "";
+			this.currentHint = "";
+			this.currentWordLength = 0;
+			this.board = {
+				words: Array(ROWS).fill(""),
+				state: Array.from({ length: ROWS }, () => (Array(MAX_WORD_LENGTH).fill("🔳"))),
+			};
+			this.guesses = 0;
+			this.active = true;
+			this.#valid = true;
+		}
+	}
+
+	get latestWord() {
+		return this.board.words[this.guesses];
+	}
+
+	get lastState() {
+		return this.board.state[this.guesses - 1];
+	}
+
+	get lastWord() {
+		return this.board.words[this.guesses - 1];
+	}
+
+	guess(word: string, targetWord: string): LetterState[] {
+		const characters = word.split("");
+		const target = targetWord.split("");
+		const result = Array<LetterState>(word.length).fill("⬛");
+		
+		// First pass: mark exact matches
+		for (let i = 0; i < word.length; ++i) {
+			if (characters[i] === target[i]) {
+				result[i] = "🟩";
+				characters[i] = "$";
+				target[i] = "$";
+			}
+		}
+		
+		// Second pass: mark partial matches
+		for (let i = 0; i < word.length; ++i) {
+			if (result[i] !== "🟩") {
+				const pos = target.indexOf(characters[i]);
+				if (pos >= 0) {
+					target[pos] = "$";
+					result[i] = "🟨";
+				}
+			}
+		}
+		
+		return result;
+	}
+
+	private parse(str: string) {
+		try {
+			const parsed = JSON.parse(str) as SessionGameState;
+			this.sessionId = parsed.sessionId;
+			this.currentWordIndex = parsed.currentWordIndex;
+			this.completed = parsed.completed;
+			this.startTime = parsed.startTime;
+			this.endTime = parsed.endTime;
+			this.wordResults = parsed.wordResults || [];
+			this.currentWord = parsed.currentWord || "";
+			this.currentHint = parsed.currentHint || "";
+			this.currentWordLength = parsed.currentWordLength || 0;
+			this.board = parsed.board;
+			this.guesses = parsed.guesses;
+			this.active = parsed.active;
+			this.#valid = true;
+		} catch (e) {
+			// Invalid data, will use defaults
+		}
+	}
+}
+
+export function isValidWord(word: string): boolean {
+	// For session mode, we'll be more lenient with word validation
+	// since we're dealing with words of various lengths
+	return word.length >= 3 && word.length <= MAX_WORD_LENGTH && /^[a-zA-Z]+$/.test(word);
 }

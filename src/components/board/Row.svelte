@@ -7,6 +7,9 @@
 	export let num: number;
 	export let value = "";
 	export let state: LetterState[];
+	
+	// Calculate the number of columns based on the state array length
+	$: cols = state.length || COLS;
 	export function shake() {
 		animation = "shake";
 	}
@@ -42,7 +45,7 @@
 	data-animation={animation}
 	class:complete={guesses > num}
 >
-	{#each Array(COLS) as _, i}
+	{#each Array(cols) as _, i}
 		<Tile bind:this={tiles[i]} state={state[i]} value={value.charAt(i)} position={i} />
 	{/each}
 </div>

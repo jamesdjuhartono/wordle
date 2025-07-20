@@ -6,12 +6,13 @@
 
 	export let value = "";
 	export let disabled = false;
+	export let maxLength = COLS; // Allow customizable max length, default to COLS
 	let preventChange = true;
 
 	const dispatch = createEventDispatcher();
 
 	function appendValue(char: string) {
-		if (!disabled && value.length < COLS) {
+		if (!disabled && value.length < maxLength) {
 			dispatch("keystroke", char);
 			value += char;
 		}

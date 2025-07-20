@@ -73,6 +73,7 @@ type Mode = {
 	icon?: string,
 	streak?: boolean,
 	useTimeZone?: boolean,
+	sessionId?: string,
 };
 
 type HardModeData = {
@@ -86,3 +87,28 @@ type Subscriber<T> = [(val: T) => void, (val?: T) => void];
 type Direction = "top" | "right" | "bottom" | "left";
 
 type Swipe = CustomEvent<{ direction: Direction; }>;
+
+type SessionProgress = {
+	sessionId: string;
+	currentWordIndex: number;
+	completed: boolean;
+	startTime: number;
+	endTime?: number;
+	wordResults: SessionWordResult[];
+};
+
+type SessionWordResult = {
+	word: string;
+	guesses: number;
+	timeSpent: number;
+	completed: boolean;
+};
+
+type LeaderboardEntry = {
+	playerName: string;
+	sessionId: string;
+	totalGuesses: number;
+	totalTime: number;
+	completedAt: number;
+	wordsCompleted: number;
+};
