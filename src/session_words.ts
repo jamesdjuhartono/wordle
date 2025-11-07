@@ -62,10 +62,10 @@ export const sessionData: Record<string, SessionData> = {
 		name: "Weddle Words",
 		words: [
 			{ word: "hinge", hint: "How James and Kim met", length: 5, image: "img/dating_app.jpg" },
-			{ word: "guzman", hint: "Our favorite fastfood takeout", length: 6 },
-			{ word: "alphafly", hint: "Running shoes model (from Nike) we both have", length: 8 },
-			{ word: "paddlepop", hint: "The name of rainbow bear that James won for Kim", length: 9, image: "img/paddlepop.jpg" },
-			{ word: "brotato", hint: "A game that both James and Kim plays", length: 7 }
+			{ word: "guzman", hint: "Our favorite fastfood takeout", length: 6, image: "img/guzman.jpeg" },
+			{ word: "alphafly", hint: "Shoes that James and Kim will wear to their half marathon", length: 8, image: "img/alpha_fly.png" },
+			{ word: "takayama", hint: "The restaurant where James proposed", length: 8, image: "img/takayama.jpg" },
+			{ word: "paddlepop", hint: "The name of rainbow bear that James won for Kim", length: 9, image: "img/paddlepop.jpg" }
 		]
 	}
 };
