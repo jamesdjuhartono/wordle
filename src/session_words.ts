@@ -61,7 +61,7 @@ export const sessionData: Record<string, SessionData> = {
 		id: "weddle",
 		name: "Weddle Words",
 		words: [
-			{ word: "hinge", hint: "How James and Kim met", length: 5, image: "img/dating_app.jpg" },
+			{ word: "hinge", hint: "How James and Kim met", length: 5, image: "img/hinge.jpg" },
 			{ word: "guzman", hint: "Our favorite fastfood takeout", length: 6, image: "img/guzman.jpeg" },
 			{ word: "alphafly", hint: "Shoes that James and Kim will wear to their half marathon", length: 8, image: "img/alpha_fly.png" },
 			{ word: "takayama", hint: "The restaurant where James proposed", length: 8, image: "img/takayama.jpg" },
