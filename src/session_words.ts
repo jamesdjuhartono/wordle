@@ -2,6 +2,7 @@ export interface SessionWord {
 	word: string;
 	hint: string;
 	length: number;
+	image?: string;
 }
 
 export interface SessionData {
@@ -60,10 +61,10 @@ export const sessionData: Record<string, SessionData> = {
 		id: "weddle",
 		name: "Weddle Words",
 		words: [
-			{ word: "hinge", hint: "How James and Kim met", length: 5 },
+			{ word: "hinge", hint: "How James and Kim met", length: 5, image: "img/dating_app.jpg" },
 			{ word: "guzman", hint: "Our favorite fastfood takeout", length: 6 },
 			{ word: "alphafly", hint: "Running shoes model (from Nike) we both have", length: 8 },
-			{ word: "paddlepop", hint: "The name of rainbow bear that James won for Kim", length: 9 },
+			{ word: "paddlepop", hint: "The name of rainbow bear that James won for Kim", length: 9, image: "img/paddlepop.jpg" },
 			{ word: "brotato", hint: "A game that both James and Kim plays", length: 7 }
 		]
 	}

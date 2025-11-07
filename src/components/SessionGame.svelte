@@ -14,6 +14,7 @@
 	import { letterStates } from "../stores";
 	import { getSessionById } from "../session_words";
 	import type { SessionData, SessionWord } from "../session_words";
+	import HintWithImage from "./HintWithImage.svelte";
 	import { Toaster } from "./widgets";
 
 	export let sessionState: SessionGameState;
@@ -194,12 +195,16 @@
 	</div>
 
 	{#if currentSessionWord}
+        <HintWithImage hint={currentSessionWord.hint} image={currentSessionWord.image} />
+    {/if}
+
+	<!-- {#if currentSessionWord}
 		<div class="hint-container">
 			<div class="hint">
 				<strong>Hint:</strong> {currentSessionWord.hint}
 			</div>
 		</div>
-	{/if}
+	{/if} -->
 
 	<Board
 		bind:this={board}
